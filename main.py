@@ -15,6 +15,7 @@ from data import load_and_prepare_data, generate_synthetic_data
 from signal_builder import compute_signals
 from strategy import run_all_strategies
 from evaluation import evaluate_strategy, print_summary_table
+from report import generate_html_report
 
 
 def plot_cumulative_returns(
@@ -97,6 +98,19 @@ def main():
 
     # Step 5: Plot
     plot_cumulative_returns(strategy_returns, args.output)
+
+    # Step 6: HTML report
+    print("\n" + "=" * 60)
+    print("Step 6: Generating HTML report")
+    print("=" * 60)
+    params = {
+        "lambda": args.lambda_,
+        "k": args.k,
+        "window": args.window,
+        "q": args.q,
+        "n_days": len(us_cc),
+    }
+    generate_html_report(strategy_returns, summary, params, "report.html")
 
     print("\nDone!")
     return summary
