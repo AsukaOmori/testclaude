@@ -2,33 +2,21 @@
 
 import numpy as np
 import pandas as pd
-import yfinance as yf
 
 from stock_config import (
     US_STOCKS, JP_STOCKS, KR_STOCKS,
     US_TICKERS_FLAT, JP_TICKERS_FLAT, KR_TICKERS_FLAT,
     N_US, N_JP, N_KR, WINDOW, START_DATE,
 )
+from data_provider import fetch_ohlc_multi
 
 
 def download_stock_data(
     stock_dict: dict[str, list[str]], start: str, end: str,
 ) -> dict[str, pd.DataFrame]:
-    """Download OHLC data for stocks via yfinance."""
+    """Download OHLC data for stocks via the multi-provider layer."""
     tickers = [t for group in stock_dict.values() for t in group]
-    data = {}
-    for ticker in tickers:
-        try:
-            df = yf.download(ticker, start=start, end=end, auto_adjust=True, progress=False)
-            if df.empty:
-                print(f"Warning: No data for {ticker}")
-                continue
-            if isinstance(df.columns, pd.MultiIndex):
-                df.columns = df.columns.get_level_values(0)
-            data[ticker] = df[["Open", "Close"]].copy()
-        except Exception as e:
-            print(f"Error downloading {ticker}: {e}")
-    return data
+    return fetch_ohlc_multi(tickers, start, end)
 
 
 def compute_cc_returns(data: dict[str, pd.DataFrame]) -> pd.DataFrame:

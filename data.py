@@ -2,30 +2,17 @@
 
 import numpy as np
 import pandas as pd
-import yfinance as yf
 
 from config import US_TICKERS, JP_TICKERS, START_DATE, END_DATE
+from data_provider import fetch_ohlc_multi
 
 
 def download_data(tickers: list[str], start: str, end: str) -> dict[str, pd.DataFrame]:
-    """Download OHLC data for given tickers via yfinance.
+    """Download OHLC data for given tickers via the multi-provider layer.
 
     Returns dict mapping ticker -> DataFrame with columns [Open, Close].
     """
-    data = {}
-    for ticker in tickers:
-        try:
-            df = yf.download(ticker, start=start, end=end, auto_adjust=True, progress=False)
-            if df.empty:
-                print(f"Warning: No data for {ticker}")
-                continue
-            # Handle multi-level columns from yfinance
-            if isinstance(df.columns, pd.MultiIndex):
-                df.columns = df.columns.get_level_values(0)
-            data[ticker] = df[["Open", "Close"]].copy()
-        except Exception as e:
-            print(f"Error downloading {ticker}: {e}")
-    return data
+    return fetch_ohlc_multi(tickers, start, end)
 
 
 def compute_close_to_close_returns(data: dict[str, pd.DataFrame]) -> pd.DataFrame:
